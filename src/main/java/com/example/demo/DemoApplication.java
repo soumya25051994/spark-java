@@ -11,15 +11,16 @@ import org.apache.spark.sql.SparkSession;
 // import org.apache.spark.SparkConf;
 // import org.apache.curator.utils.PathUtils;
 
-// import java.nio.file.InvalidPathException;
-// import java.nio.file.Paths;
 
-import java.io.File; // Import the File class
-import java.io.FileNotFoundException; // Import this class to handle errors
-import java.util.Scanner; // Import the Scanner class to read text files
+// import java.io.File; // Import the File class
+// import java.io.FileNotFoundException; // Import this class to handle errors
+// import java.util.Scanner; // Import the Scanner class to read text files
 
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+
+import java.util.Properties;
+// import java.sql.*;
 
 // @SpringBootApplication
 public class DemoApplication {
@@ -46,54 +47,94 @@ public class DemoApplication {
 		// System.out.println("Lines with a: " + numAs + ", lines with b: " + numBs);
 		// System.out.println("*****************************************************************");
 
+
+
+
+
+
 		System.out.println("Working Directory = " + System.getProperty("user.dir"));
 
 		SparkSession spark = SparkSession.builder().appName("Simple Application").master("local").getOrCreate();
 
 		String path = "src/main/resources/people.csv";
-		// PathUtils.validatePath(path);
 
-		try {
-			File myObj = new File(path);
-			Scanner myReader = new Scanner(myObj);
-			while (myReader.hasNextLine()) {
-				String data = myReader.nextLine();
-				System.out.println(data);
-			}
-			myReader.close();
+		// try {
+		// 	File myObj = new File(path);
+		// 	Scanner myReader = new Scanner(myObj);
+		// 	while (myReader.hasNextLine()) {
+		// 		String data = myReader.nextLine();
+		// 		System.out.println(data);
+		// 	}
+		// 	myReader.close();
 
-			System.out.println(
-					"***************************1111111111111111111111111111111**************************************");
-			Dataset<Row> df3 = spark.read().option("delimiter", ";").option("header", "true").csv(path);
-			df3.show();
-			System.out.println("***************************END**************************************");
+		// 	System.out.println(
+		// 			"***************************1111111111111111111111111111111**************************************");
+		// 	Dataset<Row> df3 = spark.read().option("delimiter", ";").option("header", "true").csv(path);
+		// 	df3.show();
+		// 	System.out.println("***************************END**************************************");
 
-		} catch (FileNotFoundException e) {
-			System.out.println("An error occurred.");
-			e.printStackTrace();
-		}
+		// } catch (FileNotFoundException e) {
+		// 	System.out.println("An error occurred.");
+		// 	e.printStackTrace();
+		// }
 
-		Dataset<Row> jdbcDF = spark.read()
-				.format("jdbc")
-				.option("url", "jdbc:mysql://localhost:3306/information_schema")
-				.option("dbtable", "ALL_PLUGINS")
-				.option("user", "root")
-				.option("password", "123456")
-				.load();
+		System.out.println("***************************1111111111111111111111111111111*******************");
+		Dataset<Row> df3 = spark.read().option("delimiter", ";").option("header", "true").csv(path);
+		df3.show();
+		System.out.println("***************************END**************************************");
+
+		
+
+		// try
+		// 	{  
+		// 		Class.forName("org.mariadb.jdbc.Driver");  
+		// 		Connection con=DriverManager.getConnection("jdbc:mariadb://localhost:3306/information_schema?user=root&password=123456");  
+		// 		Statement stmt=con.createStatement();  
+		// 		ResultSet rs=stmt.executeQuery("select * from ALL_PLUGINS");  
+		// 		while(rs.next())  
+		// 		System.out.println(rs.getString(1)+"  "+rs.getString(2)+"  "+rs.getString(3));  
+		// 		con.close();
+		// 	}
+
+		// catch(Exception e)
+		// 	{
+		// 		System.out.println(e);
+		// 	}
+
+
+		// Dataset<Row> jdbcDF = spark.read()
+		// 		.format("jdbc")
+		// 		.option("url", "jdbc:mysql://localhost:3306/information_schema")
+		// 		.option("dbtable", "ALL_PLUGINS")
+		// 		.option("user", "root")
+		// 		.option("password", "123456")
+		// 		.load();
+
+		Properties connectionProperties = new Properties();
+		connectionProperties.put("user", "root");
+		connectionProperties.put("password", "123456");
+		Dataset<Row> jdbcDF = spark.read().jdbc("jdbc:mysql://127.0.0.1:3306", "information_schema.ALL_PLUGINS", connectionProperties);
 
 		System.out.println("+++++++++++++++++++++++++++++++++++++++++++222222222222222222222+++++++++++++++++++++++++++++++++++");
 		System.out.println(jdbcDF);
-		// jdbcDF.select(col("code"), col("name"), col("isActive"), col("createdByUser"), col("modifiedByUser")).show();
+		jdbcDF.show();
 		System.out.println("+++++++++++++++++++++++++++++++++++++++++++222222222222222222222+++++++++++++++++++++++++++++++++++");
-		// jdbcDF.write()
-		// .format("jdbc")
-		// .option("url", "jdbc:mysql:localhost")
-		// .option("dbtable", "information_schema.customer")
-		// .option("user", "root")
-		// .option("password", "123456")
-		// .save();
+		
+		
+		
+		df3.write()
+		.format("jdbc")
+		.option("url", "jdbc:mysql://127.0.0.1:3306")
+		.option("dbtable", "soumya_test_db.customer_2")
+		.option("user", "root")
+		.option("password", "123456")
+		.save();
 
 		spark.stop();
+
+
+
+
 
 		// spark-submit --class com.example.demo.DemoApplication ..\..\demo\demo\target\demo-0.0.1-SNAPSHOT.jar
 		// command prompt open in : C:\Soumya\spark-3.3.0-bin-hadoop3\bin>
